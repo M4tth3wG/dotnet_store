@@ -1,0 +1,116 @@
+﻿@model DotNet_lab_lista_10.Models.Order
+
+@{
+    ViewData["Title"] = "OrderSummary";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Your order has been confirmed.</h3>
+<hr/>
+<h2>Order Summary</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().Category)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().NumberOfItems)
+            </th>
+            <th>
+                Subtotal
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Articles) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Image))
+                    {
+                        <img src="~/uploads/@item.Image" alt="Image" style="width: 50px; height: 50px;" />
+                    }
+                    else
+                    {
+                        <img src="~/images/noPhoto.jpg" alt="Default Image" style="width: 50px; height: 50px;" />
+                    }
+                </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NumberOfItems)
+            </td>
+                <td>
+                    @{
+                        double subtotal = item.NumberOfItems * item.Price;
+                    }
+                    @subtotal.ToString("0.00")
+                </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<h3>Total cost: @Model.Articles.Sum(i => i.Price * i.NumberOfItems).ToString("0.00")</h3>
+
+<hr />
+
+<div>
+
+    <h2>Shipment details</h2>
+    
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.FirstName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.FirstName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.LastName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.LastName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Address)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Address)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.City)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.City)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.PaymentMethod)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.PaymentMethod)
+        </dd>
+    </dl>
+</div>
+
+<div>
+    <input type="button" value="Back to shop" onclick="location.href='@Url.Action("Index", "Shop")'" />
+</div>

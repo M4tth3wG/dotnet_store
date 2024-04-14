@@ -1,0 +1,111 @@
+﻿@model DotNet_lab_lista_10.Models.Order
+
+@{
+    ViewData["Title"] = "OrderForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Order Details</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().Category)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Articles.FirstOrDefault().NumberOfItems)
+            </th>
+            <th>
+                Subtotal
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Articles) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Image))
+                    {
+                        <img src="~/uploads/@item.Image" alt="Image" style="width: 50px; height: 50px;" />
+                    }
+                    else
+                    {
+                        <img src="~/images/noPhoto.jpg" alt="Default Image" style="width: 50px; height: 50px;" />
+                    }
+                </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NumberOfItems)
+            </td>
+                <td>
+                    @{
+                        double subtotal = item.NumberOfItems * item.Price;
+                    }
+                    @subtotal.ToString("0.00")
+                </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<h3>Total cost: @Model.Articles.Sum(i => i.Price * i.NumberOfItems).ToString("0.00")</h3>
+<hr />
+<h2>Shipment details</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="OrderDetails" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Articles" />
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Address" class="control-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="City" class="control-label"></label>
+                <input asp-for="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PaymentMethod" class="control-label"></label>
+                <select asp-for="PaymentMethod" class="custom-select" asp-items="Html.GetEnumSelectList<PaymentMethod>()">
+                    <option value="">Please select</option>
+                </select>
+                <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Confirm order" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>

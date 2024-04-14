@@ -1,0 +1,14 @@
+﻿@model List<DotNet_lab_lista_10.Models.Category>
+
+<h1>Categories</h1>
+
+
+<select onchange="location = this.value;">
+    <option value="">Select a category</option>
+    @foreach (var category in Model)
+    {
+        <option value="@Url.Action("Articles", category)">@category.Name</option>
+    }
+</select>
+
+<p><a asp-controller="Cart" asp-action="Index">Cart</a></p>

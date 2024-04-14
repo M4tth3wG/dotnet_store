@@ -1,0 +1,176 @@
+﻿@model IEnumerable<DotNet_lab_lista_10.Models.Article>
+
+@{
+    ViewData["Title"] = "ArticlesDemo";
+}
+
+<h1>@ViewBag.SelectedCategory.Name</h1>
+
+<select onchange="location = this.value;">
+    <option value="">Select a category</option>
+    @foreach (var category in ViewBag.Categories as List<Category>)
+    {
+        <option value="@Url.Action("Articles", category)">@category.Name</option>
+    }
+</select>
+
+<p><a asp-controller="Cart" asp-action="Index">Cart</a></p>
+
+
+<table class="table" id="articles-table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Image)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Image))
+                    {
+                        <img src="~/uploads/@item.Image" alt="Image" style="width: 50px; height: 50px;" />
+                    }
+                    else
+                    {
+                        <img src="~/images/noPhoto.jpg" alt="Default Image" style="width: 50px; height: 50px;" />
+                    }
+                </td>
+                <td>
+                    <a onclick="addToCart(@item.Id)" href="javascript:void(0)">Add to cart</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<span id="end-of-articles"></span>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+
+    <script>
+        var page_index = 1;
+        var hasEntered = true;
+
+        let observer = new IntersectionObserver(function (entries, observer) {
+            hasEntered = !hasEntered;
+
+            if (hasEntered) {
+                loadNextArticles(@ViewBag.NumberOfItems, @ViewBag.SelectedCategory.Id);
+            }
+        });
+
+        let end = document.getElementById("end-of-articles");
+        observer.observe(end);
+
+        function loadItems(list) {
+            let table = document.getElementById("articles-table");
+
+            for (item of list) {
+                let row = table.insertRow();
+                row.insertCell().innerHTML = item.name;
+                row.insertCell().innerHTML = item.price.toFixed(2);
+
+                let image = item.image;
+                var imageHtml;
+
+                if (image == null) {
+                    imageHtml = `<img src="/images/noPhoto.jpg" alt="Default Image" style="width: 50px; height: 50px; " />`;
+                }
+                else {
+                    imageHtml = `<img src="/uploads/${image} alt="Image" style="width: 50px; height: 50px;" />`;
+                }
+
+                row.insertCell().innerHTML = imageHtml;
+                row.insertCell().innerHTML = `<a onclick="addToCart(${item.id})" href="javascript:void(0)">Add to cart</a>`;
+            }
+        }
+
+        function loadNextArticles(numberOfItems, categoryId) {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                if (this.status === 200) {
+                    try {
+                        const list = JSON.parse(this.responseText);
+                        loadItems(list);
+                        page_index++;
+                    } catch (e) {
+                        console.warn('There was an error in JSON. Could not parse.');
+                    }
+                } else if (this.status === 204) { // 204 No Content, so NULL
+                    window.alert("No more elements");
+                } else {
+                    console.warn("Recived " + this.status + " in response code.");
+                }
+            };
+            let id = document.getElementById("id");
+            let str = "/api/articles/nextpage/percategory/" + `${page_index},${numberOfItems},${categoryId}`;
+            console.log(str);
+
+            xhr.open("get", str);
+            xhr.send();
+        }
+
+        function addToCart(id) {
+            var quantity = getArticleQuantity(id);
+
+            if (quantity == null) {
+                quantity = 1;
+            }
+            else {
+                quantity++;
+            }
+
+            setCartCookie(id, quantity);
+        }
+
+        function getArticleQuantity(id) {
+            var cookies = document.cookie.split(';');
+            let cookieName = `article${id}=`;
+
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+
+                if (cookie.indexOf(cookieName) === 0) {
+                    return parseInt(cookie.substring(cookieName.length, cookie.length));
+                }
+            }
+
+            return null;
+        }
+
+        var setCartCookie = function (id, value, remove = false) {
+            var date = new Date();
+
+            if (remove) {
+                date.setDate(date.getDate() - 1);
+            }
+            else {
+                date.setDate(date.getDate() + 7);
+            }
+
+            let expires = "expires=" + date.toUTCString();
+            document.cookie = `article${id}` + "=" + value + ";" + expires + ";path=/";
+        };
+    </script>
+}
